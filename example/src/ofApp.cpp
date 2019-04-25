@@ -3,14 +3,17 @@
 
 void ofApp::setup() {
     
-    m_Grabber.setup(640, 480);
+    m_Grabber.setup(1280,720);
     mCapFbo.allocate( m_Grabber.getWidth(), m_Grabber.getHeight(), GL_RGB );
 
     m_Recorder.setup(true, false, glm::vec2(m_Grabber.getWidth(), m_Grabber.getHeight()) );
     m_Recorder.setOverWrite(true);
     
-    // you don't need to set this if FFMPEG is in your system path //
-    m_Recorder.setFFmpegPathToAddonsPath();
+    #if defined(TARGET_OSX)
+    m_Recorder.setFFmpegPath(ofToDataPath("ffmpeg/osx/ffmpeg"));
+    #elif defined(TARGET_WIN32)
+    m_Recorder.setFFmpegPath(ofToDataPath("ffmpeg/win/ffmpeg.exe"));
+    #endif
     
     /**
      * You can also use the following methods to crop the output file
@@ -60,6 +63,7 @@ void ofApp::draw() {
         ofDrawCircle(ofPoint(10, 40), 10);
 
         // Draw the information
+        ofSetColor(ofColor::green);
         ofDrawBitmapStringHighlight("Press spacebar to toggle record custom."
                                     "\nPress (t) to save thumbnail.",
                                     10, ofGetHeight() - 200 );

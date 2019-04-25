@@ -1,12 +1,13 @@
 #pragma once
-// openFrameworks
+
 #include "ofTypes.h"
-//#include "ofBaseSoundStream.h"
+
 #include "ofVideoBaseTypes.h"
 #include "ofSoundBaseTypes.h"
 #include "ofRectangle.h"
 #include "ofPixels.h"
-#if defined(TARGET_OSX)
+
+#if !defined(TARGET_WIN32)
 #include <thread>
 #endif
 
