@@ -7,9 +7,7 @@
 #include "ofRectangle.h"
 #include "ofPixels.h"
 
-#if !defined(TARGET_WIN32)
 #include <thread>
-#endif
 
 using HighResClock = std::chrono::time_point<std::chrono::high_resolution_clock>;
 
