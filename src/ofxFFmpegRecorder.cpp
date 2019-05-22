@@ -386,6 +386,45 @@ bool ofxFFmpegRecorder::startCustomRecord()
     return true;
 }
 
+bool ofxFFmpegRecorder::startCustomStreaming()
+{
+    if (isRecording()) {
+        LOG_ERROR("A recording is already in proggress.");
+        return false;
+    }
+
+    m_AddedVideoFrames = 0;
+
+    std::vector<std::string> args;
+    std::copy(m_AdditionalInputArguments.begin(), m_AdditionalInputArguments.end(), std::back_inserter(args));
+
+    args.push_back("-framerate " + std::to_string(m_Fps));
+    args.push_back("-s " + std::to_string(static_cast<unsigned int>(m_VideoSize.x)) + "x" + std::to_string(static_cast<unsigned int>(m_VideoSize.y)));
+    args.push_back("-f rawvideo");
+    args.push_back("-pix_fmt " + mPixFmt);
+    args.push_back("-vcodec rawvideo");
+    args.push_back("-i -");
+
+    args.push_back("-b:v " + std::to_string(m_BitRate) + "k");
+    std::copy(m_AdditionalOutputArguments.begin(), m_AdditionalOutputArguments.end(), std::back_inserter(args));
+
+    args.push_back("-f rtp rtp://127.0.0.1:11234");
+
+    std::string cmd = m_FFmpegPath + " ";
+    for (auto arg : args) {
+        cmd += arg + " ";
+    }
+
+    #if defined(_WIN32)
+    m_CustomRecordingFile = _popen(cmd.c_str(), "w");
+#else
+    m_CustomRecordingFile = popen(cmd.c_str(), "w");
+#endif
+
+    return true;
+
+}
+
 size_t ofxFFmpegRecorder::addFrame(const ofPixels &pixels)
 {
     if (m_IsPaused) {
