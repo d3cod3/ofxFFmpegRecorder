@@ -408,7 +408,7 @@ bool ofxFFmpegRecorder::startCustomStreaming()
     args.push_back("-b:v " + std::to_string(m_BitRate) + "k");
     std::copy(m_AdditionalOutputArguments.begin(), m_AdditionalOutputArguments.end(), std::back_inserter(args));
 
-    args.push_back("-f rtp rtp://127.0.0.1:11234");
+    args.push_back("-f rtp rtp://127.0.0.1:1234");
 
     std::string cmd = m_FFmpegPath + " ";
     for (auto arg : args) {
