@@ -19,12 +19,16 @@ ofxFFmpegRecorder::ofxFFmpegRecorder()
     , m_VideoSize(0, 0)
     , m_BitRate(2000)
     , m_AddedVideoFrames(0)
+    , m_AddedAudioFrames(0)
     , m_Fps(30.f)
+    , m_bufferSize(1024)
+    , m_sampleRate(44100)
     , m_CaptureDuration(0.f)
     , m_TotalPauseDuration(0.f)
     , m_DefaultVideoDevice()
     , m_DefaultAudioDevice()
     , m_VideCodec("mpeg4")
+    , m_AudioCodec("libmp3lame")
     , m_CustomRecordingFile(nullptr)
     , m_DefaultRecordingFile(nullptr)
 {
@@ -48,6 +52,11 @@ void ofxFFmpegRecorder::setup(bool recordVideo, bool recordAudio, glm::vec2 vide
     if (ffmpegPath.length() > 0) {
         m_FFmpegPath = ffmpegPath;
     }
+}
+
+void ofxFFmpegRecorder::setAudioConfig(int bufferSize, int sampleRate){
+    m_bufferSize = bufferSize;
+    m_sampleRate = sampleRate;
 }
 
 bool ofxFFmpegRecorder::isRecordVideo() const
@@ -257,6 +266,11 @@ float ofxFFmpegRecorder::getRecordedDuration() const
     return m_AddedVideoFrames / m_Fps;
 }
 
+float ofxFFmpegRecorder::getRecordedAudioDuration(float afps) const
+{
+    return m_AddedAudioFrames / afps;
+}
+
 bool ofxFFmpegRecorder::record(float duration)
 {
     if (isRecording()) {
@@ -386,6 +400,62 @@ bool ofxFFmpegRecorder::startCustomRecord()
     return true;
 }
 
+bool ofxFFmpegRecorder::startCustomAudioRecord()
+{
+    if (isRecording()) {
+        LOG_ERROR("A recording is already in proggress.");
+        return false;
+    }
+
+    if (m_OutputPath.length() == 0) {
+        LOG_ERROR("Output path is empty. Cannot record.");
+        return false;
+    }
+
+    if (ofFile::doesFileExist(m_OutputPath, false) && m_IsOverWrite == false) {
+        LOG_ERROR("The output file already exists and overwriting is disabled. Cannot capture audio.");
+        return false;
+    }
+
+    m_AddedAudioFrames = 0;
+
+    std::vector<std::string> args;
+    std::copy(m_AdditionalInputArguments.begin(), m_AdditionalInputArguments.end(), std::back_inserter(args));
+
+    // audio input config
+    args.push_back("-y");
+    args.push_back("-vn");
+    args.push_back("-r " + std::to_string(m_sampleRate));
+    args.push_back("-f f32le");
+    //args.push_back("-acodec aac");
+    args.push_back("-ac 1");
+    args.push_back("-i -");
+
+
+    // audio export file config
+    args.push_back("-acodec " + m_AudioCodec);
+    args.push_back("-f mp3");
+    args.push_back("-ar " + std::to_string(m_sampleRate));
+    args.push_back("-ac 1");
+    args.push_back("-b:a 320k");
+    std::copy(m_AdditionalOutputArguments.begin(), m_AdditionalOutputArguments.end(), std::back_inserter(args));
+
+    args.push_back(m_OutputPath);
+
+    std::string cmd = m_FFmpegPath + " ";
+    for (auto arg : args) {
+        cmd += arg + " ";
+    }
+
+#if defined(_WIN32)
+    m_CustomRecordingFile = _popen(cmd.c_str(), "wb");
+#else
+    m_CustomRecordingFile = popen( cmd.c_str(), "w" );
+#endif // _WIN32
+
+    return true;
+}
+
 bool ofxFFmpegRecorder::startCustomStreaming()
 {
     if (isRecording()) {
@@ -394,6 +464,7 @@ bool ofxFFmpegRecorder::startCustomStreaming()
     }
 
     m_AddedVideoFrames = 0;
+    m_AddedAudioFrames = 0;
 
     std::vector<std::string> args;
     std::copy(m_AdditionalInputArguments.begin(), m_AdditionalInputArguments.end(), std::back_inserter(args));
@@ -463,6 +534,43 @@ size_t ofxFFmpegRecorder::addFrame(const ofPixels &pixels)
     return written;
 }
 
+size_t ofxFFmpegRecorder::addBuffer(const ofSoundBuffer &buffer, float afps){
+    if (m_IsPaused) {
+        LOG_NOTICE("Recording is paused.");
+        return 0;
+    }
+
+    if (m_CustomRecordingFile == nullptr) {
+        LOG_ERROR("Custom recording is not in proggress. Cannot add the frame.");
+        return 0;
+    }
+
+    if (buffer.getBuffer().size() == 0 ) {
+        LOG_ERROR("Given buffer is not allocated.");
+        return 0;
+    }
+
+    size_t written = 0;
+
+    if (m_AddedAudioFrames == 0) {
+        m_Thread = std::thread(&ofxFFmpegRecorder::processBuffer, this);
+        m_RecordStartTime = std::chrono::high_resolution_clock::now();
+    }
+
+    HighResClock now = std::chrono::high_resolution_clock::now();
+    const float recordedDuration = getRecordedAudioDuration(afps);
+    float delta = std::chrono::duration<float>(now - m_RecordStartTime).count() - recordedDuration - m_TotalPauseDuration;
+    const float framerate = 1.f / m_Fps;
+
+    while (m_AddedAudioFrames == 0 || delta >= framerate) {
+        delta -= framerate;
+        m_Buffers.produce(new ofSoundBuffer(buffer));
+        m_AddedAudioFrames++;
+    }
+
+    return written;
+}
+
 void ofxFFmpegRecorder::stop()
 {
     if (m_CustomRecordingFile) {
@@ -473,6 +581,7 @@ void ofxFFmpegRecorder::stop()
         #endif
         m_CustomRecordingFile = nullptr;
         m_AddedVideoFrames = 0;
+        m_AddedAudioFrames = 0;
         joinThread();
     }
     else if (m_DefaultRecordingFile) {
@@ -496,6 +605,7 @@ void ofxFFmpegRecorder::cancel()
         #endif
         m_CustomRecordingFile = nullptr;
         m_AddedVideoFrames = 0;
+        m_AddedAudioFrames = 0;
         joinThread();
     }
     else if (m_DefaultRecordingFile) {
@@ -704,6 +814,23 @@ void ofxFFmpegRecorder::processFrame()
 
             pixels->clear();
             delete pixels;
+        }
+    }
+}
+
+void ofxFFmpegRecorder::processBuffer()
+{
+    while (isRecording()) {
+        ofSoundBuffer *buffer = nullptr;
+        if (m_Buffers.consume(buffer) && buffer) {
+            //const float *data = buffer->getBuffer().data();
+            //const size_t dataLength = buffer->getBuffer().size();
+            const size_t written = fwrite(&buffer->getBuffer()[0], sizeof(float), buffer->getBuffer().size(), m_CustomRecordingFile);
+            if (written <= 0) {
+                LOG_WARNING("Cannot write the buffer.");
+            }
+            buffer->clear();
+            delete buffer;
         }
     }
 }

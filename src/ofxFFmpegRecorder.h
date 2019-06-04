@@ -4,6 +4,7 @@
 
 #include "ofVideoBaseTypes.h"
 #include "ofSoundBaseTypes.h"
+#include "ofSoundBuffer.h"
 #include "ofRectangle.h"
 #include "ofPixels.h"
 
@@ -114,6 +115,8 @@ public:
     std::string getVideoCodec() const;
     void setVideoCodec(const std::string &codec);
 
+    void setAudioConfig(int bufferSize, int sampleRate);
+
 	float getWidth();
 	void setWidth(float aw);
 	float getHeight();
@@ -131,6 +134,12 @@ public:
     float getRecordedDuration() const;
 
     /**
+     * @brief Returns the record duration for the custom audio recording.
+     * @return
+     */
+    float getRecordedAudioDuration(float afps) const;
+
+    /**
      * @brief Starts recording a video from a default device that is determined by @ref determineDefaultDevices()
      * @param duration This is optional. Duration is in seconds.
      * @return If the class was already recording a video this method returns false, otherwise it returns true;
@@ -140,14 +149,21 @@ public:
     /**
      * @brief Setup ffmpeg for a custom video recording. Input is taken from the stdin as raw image. This also inherits the
      * m_AdditionalArguments.
-     * @return If the class was already recording a video this method returns false, otherwise it returns true;
+     * @return If the class was already recording a video/audio this method returns false, otherwise it returns true;
      */
     bool startCustomRecord();
 
     /**
+     * @brief Setup ffmpeg for a custom audio recording. This also inherits the
+     * m_AdditionalArguments.
+     * @return If the class was already recording a video/audio this method returns false, otherwise it returns true;
+     */
+    bool startCustomAudioRecord();
+
+    /**
      * @brief Setup ffmpeg for a custom video streaming. Input is taken from the stdin as raw image. This also inherits the
      * m_AdditionalArguments.
-     * @return If the class was already recording a video this method returns false, otherwise it returns true;
+     * @return If the class was already recording a video/audio this method returns false, otherwise it returns true;
      */
     bool startCustomStreaming();
 
@@ -157,6 +173,13 @@ public:
      * @return
      */
     size_t addFrame(const ofPixels &pixels);
+
+    /**
+     * @brief Add a sound buffer to the stream. This can onle be used If you started recording a custom audio. Make sure that the buffers are added continuously inside the audioIn thread.
+     * @param pixels
+     * @return
+     */
+    size_t addBuffer(const ofSoundBuffer &buffer, float afps);
 
     void stop();
 
@@ -252,11 +275,14 @@ private:
     bool m_IsPaused;
 
     glm::vec2 m_VideoSize;
-    unsigned int m_BitRate, m_AddedVideoFrames;
+    unsigned int m_BitRate, m_AddedVideoFrames, m_AddedAudioFrames;
 
     float m_Fps,
           m_CaptureDuration,
           m_TotalPauseDuration;
+
+    int m_bufferSize;
+    int m_sampleRate;
 
     /**
      * @brief If the default video device is not set, the default one is automatically set by this class
@@ -269,6 +295,7 @@ private:
     ofSoundDevice m_DefaultAudioDevice;
 
     std::string m_VideCodec;
+    std::string m_AudioCodec;
     FILE *m_CustomRecordingFile, *m_DefaultRecordingFile;
 
     /**
@@ -286,6 +313,7 @@ private:
 
     std::thread m_Thread;
     LockFreeQueue<ofPixels *> m_Frames;
+    LockFreeQueue<ofSoundBuffer *> m_Buffers;
 
     std::string mPixFmt = "rgb24";
 
@@ -296,9 +324,10 @@ private:
     void determineDefaultDevices();
 
     /**
-     * @brief Runs in parallele and writes the stored frames to ffmpeg
+     * @brief Runs in parallele and writes the stored frames/buffers to ffmpeg
      */
     void processFrame();
+    void processBuffer();
     void joinThread();
 
 };
