@@ -33,4 +33,5 @@ example_ofxFFmpegRecorder/bin/.tmp
 bin/.tmp
 obj/
 **/build-example-Desktop-Debug
+**/build-example-Desktop-Debug/qtc_Desktop_Debug
 **/build-example-Desktop-Release

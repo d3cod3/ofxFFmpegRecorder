@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 4.6.1, 2019-04-25T13:30:32. -->
+<!-- Written by QtCreator 4.6.1, 2019-06-06T10:42:16. -->
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
-  <value type="QByteArray">{2bbfa892-adfa-45cf-b04a-92a58cc7e1df}</value>
+  <value type="QByteArray">{797266c2-c440-4e2a-aeca-97669db2bb74}</value>
  </data>
  <data>
   <variable>ProjectExplorer.Project.ActiveTarget</variable>
@@ -61,8 +61,8 @@
   <valuemap type="QVariantMap">
    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">Desktop</value>
    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">Desktop</value>
-   <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">{303ac1a5-748d-4d93-9a7d-776b2629aa58}</value>
-   <value type="int" key="ProjectExplorer.Target.ActiveBuildConfiguration">0</value>
+   <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">{251ec610-909d-4a82-81f9-0ec7b6b04017}</value>
+   <value type="int" key="ProjectExplorer.Target.ActiveBuildConfiguration">1</value>
    <value type="int" key="ProjectExplorer.Target.ActiveDeployConfiguration">0</value>
    <value type="int" key="ProjectExplorer.Target.ActiveRunConfiguration">0</value>
    <valuemap type="QVariantMap" key="ProjectExplorer.Target.BuildConfiguration.0">
@@ -76,7 +76,7 @@
       <value type="bool" key="Qbs.CleanInstallRoot">false</value>
       <valuemap type="QVariantMap" key="Qbs.Configuration">
        <value type="QString" key="qbs.defaultBuildVariant">debug</value>
-       <value type="QString" key="qbs.profile">qtc_Desktop_60c78ae8</value>
+       <value type="QString" key="qbs.profile">qtc_Desktop_6c662de5</value>
        <value type="bool" key="qbspm.forceProbes">false</value>
       </valuemap>
       <value type="bool" key="Qbs.DryKeepGoing">false</value>
@@ -125,12 +125,13 @@
       <value type="bool" key="Qbs.CleanInstallRoot">false</value>
       <valuemap type="QVariantMap" key="Qbs.Configuration">
        <value type="QString" key="qbs.defaultBuildVariant">release</value>
-       <value type="QString" key="qbs.profile">qtc_Desktop_60c78ae8</value>
+       <value type="QString" key="qbs.profile">qtc_Desktop_6c662de5</value>
+       <value type="bool" key="qbspm.forceProbes">false</value>
       </valuemap>
       <value type="bool" key="Qbs.DryKeepGoing">false</value>
       <value type="bool" key="Qbs.DryRun">false</value>
       <value type="bool" key="Qbs.Install">true</value>
-      <value type="int" key="Qbs.MaxJobs">0</value>
+      <value type="int" key="Qbs.MaxJobs">12</value>
       <value type="bool" key="Qbs.ShowCommandLines">false</value>
       <value type="bool" key="Qbs.enableQmlDebuggingKey">false</value>
       <value type="bool" key="Qbs.forceProbesKey">false</value>
@@ -225,7 +226,7 @@
     <value type="QString" key="Qbs.RunConfiguration.CommandLineArguments"></value>
     <value type="bool" key="Qbs.RunConfiguration.UsingLibraryPaths">true</value>
     <value type="QString" key="Qbs.RunConfiguration.WorkingDirectory"></value>
-    <value type="QString" key="Qbs.RunConfiguration.WorkingDirectory.default">/Users/n3m3da/Public/development/of_v0.10.0_osx_release/addons/ofxFFmpegRecorder/example/bin/example_debug.app/Contents/MacOS</value>
+    <value type="QString" key="Qbs.RunConfiguration.WorkingDirectory.default">/Users/n3m3da/Public/development/of_v0.10.0_osx_release/addons/ofxFFmpegRecorder/example/bin/example.app/Contents/MacOS</value>
     <value type="uint" key="RunConfiguration.QmlDebugServerPort">3768</value>
     <value type="bool" key="RunConfiguration.UseCppDebugger">false</value>
     <value type="bool" key="RunConfiguration.UseCppDebuggerAuto">true</value>

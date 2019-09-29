@@ -3,21 +3,21 @@
 <plist version="1.0">
 <dict>
 	<key>BuildMachineOSBuild</key>
-	<string>16G1918</string>
+	<string>17G7024</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-	<string>example_debug</string>
+	<string>example</string>
 	<key>CFBundleExecutable</key>
-	<string>example_debug</string>
+	<string>example</string>
 	<key>CFBundleIconFile</key>
-	<string>icon-debug.icns</string>
+	<string>icon.icns</string>
 	<key>CFBundleIdentifier</key>
-	<string>org.example.example-debug</string>
+	<string>org.example.example</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>example_debug</string>
+	<string>example</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
