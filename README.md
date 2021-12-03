@@ -2,6 +2,9 @@
 
 A small class to utilize the video recording functionality of `ffmpeg`.
 
+
+Manual compilation [here](./Assets/ManualCompilation/compileFFmpeg.md)
+
 # Features
 
 - Record video
