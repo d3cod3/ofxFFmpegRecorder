@@ -266,3 +266,42 @@ make install
 ```
 
 <br>
+
+
+# Distribution of FFmpeg 
+
+<br>
+
+To comply with the [FFmpeg License and Legal Considerations](https://www.ffmpeg.org/legal.html), the version of FFmpeg distributed with this repo is using the following configuration:
+
+```sh
+cd /FFmpegInstall/FFmpeg-n4.3.3
+make clean
+./configure \
+--toolchain=msvc \
+--prefix="/FFmpegInstall/ffmpeg_build" \
+--target-os=win64 \
+--arch=x86_64 \
+--extra-ldflags=-libpath:"/FFmpegInstall/nv_sdk/lib" \
+--extra-ldflags=-libpath:"/FFmpegInstall/ffmpeg_build/lib" \
+--extra-cflags=-I"/FFmpegInstall/nv_sdk/include" \
+--extra-cflags=-I"/FFmpegInstall/ffmpeg_build/include" \
+--nvccflags="-gencode arch=compute_52,code=sm_52 -O2" \
+--toolchain=msvc \
+--enable-cuda-nvcc \
+--enable-libnpp \
+--enable-shared \
+--enable-avresample \
+--pkg-config=pkg-config \
+--disable-debug \
+--enable-dxva2 \
+--enable-d3d11va \
+--enable-libx264 \
+--enable-version3 \
+--disable-doc \
+--logfile=config.log
+make -j$(nproc)
+make install
+```
+
+```

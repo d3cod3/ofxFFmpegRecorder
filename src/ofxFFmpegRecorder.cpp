@@ -5,9 +5,24 @@
 #include "ofSoundStream.h"
 
 // Logging macros
+#if defined(_DEBUG)
+
 #define LOG_ERROR(message) ofLogError("") << __FUNCTION__ << ":" << __LINE__ << ": " << message
 #define LOG_WARNING(message) ofLogWarning("") << __FUNCTION__ << ":" << __LINE__ << ": " << message
 #define LOG_NOTICE(message) ofLogNotice("") << __FUNCTION__ << ":" << __LINE__ << ": " << message
+#define LOG(message)								\
+do {															\
+  std::cout << message << std::endl;						\
+} while (0)
+
+#else
+
+#define LOG_ERROR(message) 
+#define LOG_WARNING(message)
+#define LOG_NOTICE(message)
+#define LOG(X)     
+
+#endif
 
 ofxFFmpegRecorder::ofxFFmpegRecorder()
     : m_FFmpegPath("ffmpeg")
@@ -193,7 +208,7 @@ void ofxFFmpegRecorder::setBitRate(unsigned int rate)
         LOG_NOTICE("A recording is in proggress. The change will take effect for the next recording session.");
     }
 
-    m_BitRate = rate;
+	m_BitRate = rate;
 }
 
 std::string ofxFFmpegRecorder::getVideoCodec() const
@@ -207,7 +222,7 @@ void ofxFFmpegRecorder::setVideoCodec(const std::string &codec)
         LOG_NOTICE("A recording is in proggress. The change will take effect for the next recording session.");
     }
 
-    m_VideCodec = codec;
+	m_VideCodec = codec;
 }
 
 float ofxFFmpegRecorder::getWidth() {
@@ -396,6 +411,9 @@ bool ofxFFmpegRecorder::startCustomRecord()
 //    m_CustomRecordingFile = _popen(cmd.c_str(), "w");
     m_CustomRecordingFile = popen( cmd.c_str(), "w" );
 #endif // _WIN32
+
+
+	LOG(cmd);
 
     return true;
 }

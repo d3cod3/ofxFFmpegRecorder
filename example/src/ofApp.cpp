@@ -41,7 +41,8 @@ void ofApp::setup() {
     #if defined(TARGET_OSX)
     m_Recorder.setFFmpegPath(ofToDataPath("ffmpeg/osx/ffmpeg"));
     #elif defined(TARGET_WIN32)
-    m_Recorder.setFFmpegPath(ofToDataPath("ffmpeg/win/ffmpeg.exe"));
+	m_Recorder.setFFmpegPath(ofToDataPath("ffmpeg/osx/ffmpeg"));
+    m_Recorder.setFFmpegPath(ofToDataPath("C:/dev/msys64/ThirdParty/ffmpeg/ffmpeg_build/bin/ffmpeg.exe", true));
     #endif
     
     /**
@@ -58,10 +59,28 @@ void ofApp::setup() {
     audioCounter    = 0;
     bufferCounter	= 0;
     lastAudioTimeReset = ofGetElapsedTimeMillis();
+
+
+	/* add additionnal arguments such as cuda encoder :
+	*/
+	m_Recorder.addAdditionalInputArgument(" -hwaccel cuda -hwaccel_output_format cuda ");
+	m_Recorder.setVideoCodec("h264_nvenc");
+
+
 }
 
 void ofApp::update() {
-    m_Grabber.update();
+    m_Grabber.update();    
+	
+	if (m_Recorder.isRecording()) {
+		if (isRecordingVideo) {
+			// ofxFastFboReader can be used to speed this up :)
+			mCapFbo.readToPixels(mPix);
+			if (mPix.getWidth() > 0 && mPix.getHeight() > 0) {
+				m_Recorder.addFrame(mPix);
+			}
+		}
+	}
 }
 
 void ofApp::draw() {
@@ -75,15 +94,7 @@ void ofApp::draw() {
         ofDrawCircle( mCapFbo.getWidth()/2, mCapFbo.getHeight()/2, ((sin( ofGetElapsedTimef() * 6.) * 0.5 + 0.5) + 0.5) * 100 + 20);*/
     } mCapFbo.end();
     
-    if( m_Recorder.isRecording() ) {
-        if(isRecordingVideo){
-            // ofxFastFboReader can be used to speed this up :)
-            mCapFbo.readToPixels( mPix );
-            if( mPix.getWidth() > 0 && mPix.getHeight() > 0 ) {
-                m_Recorder.addFrame( mPix );
-            }
-        }
-    }
+
     
     mCapFbo.draw(0,0);
 
@@ -142,7 +153,9 @@ void ofApp::keyReleased(int key) {
             m_Recorder.setOutputPath( ofToDataPath(ofGetTimestampString() + ".avi", true ));
 #endif
 
-            m_Recorder.setVideoCodec("libx264");
+            //m_Recorder.setVideoCodec("libx264");
+            // example test with h264_nvenc
+			m_Recorder.setVideoCodec("h264_nvenc");
             m_Recorder.setBitRate(8000);
 
             isRecordingVideo = true;
