@@ -1,0 +1,226 @@
+diff --git a/configure b/configure
+old mode 100755
+new mode 100644
+index c320770794..3ebdd0d78f
+--- a/configure
++++ b/configure
+@@ -6380,8 +6380,10 @@ enabled libv4l2           && require_pkg_config libv4l2 libv4l2 libv4l2.h v4l2_i
+ enabled libvidstab        && require_pkg_config libvidstab "vidstab >= 0.98" vid.stab/libvidstab.h vsMotionDetectInit
+ enabled libvmaf           && require_pkg_config libvmaf "libvmaf >= 1.3.9" libvmaf.h compute_vmaf
+ enabled libvo_amrwbenc    && require libvo_amrwbenc vo-amrwbenc/enc_if.h E_IF_init -lvo-amrwbenc
+-enabled libvorbis         && require_pkg_config libvorbis vorbis vorbis/codec.h vorbis_info_init &&
+-                             require_pkg_config libvorbisenc vorbisenc vorbis/vorbisenc.h vorbis_encode_init
++enabled libvorbis           && { { require libvorbis "stdint.h vorbis/codec.h" vorbis_info_init "-lvorbis  $pthreads_extralibs $libm_extralibs" &&
++                                 warn "using libvorbis without pkg-config"; } || 
++                                 { require_pkg_config libvorbis vorbis vorbis/codec.h vorbis_info_init &&
++                             require_pkg_config libvorbisenc vorbisenc vorbis/vorbisenc.h vorbis_encode_init ; } }
+ 
+ enabled libvpx            && {
+     enabled libvpx_vp8_decoder && {
+@@ -6468,133 +6470,81 @@ enabled openssl           && { check_pkg_config openssl openssl openssl/ssl.h OP
+                                check_lib openssl openssl/ssl.h SSL_library_init -lssl -lcrypto ||
+                                check_lib openssl openssl/ssl.h SSL_library_init -lssl32 -leay32 ||
+                                check_lib openssl openssl/ssl.h SSL_library_init -lssl -lcrypto -lws2_32 -lgdi32 ||
+-                               die "ERROR: openssl not found"; }
+-enabled pocketsphinx      && require_pkg_config pocketsphinx pocketsphinx pocketsphinx/pocketsphinx.h ps_init
+-enabled rkmpp             && { require_pkg_config rkmpp rockchip_mpp  rockchip/rk_mpi.h mpp_create &&
+-                               require_pkg_config rockchip_mpp "rockchip_mpp >= 1.3.7" rockchip/rk_mpi.h mpp_create &&
+-                               { enabled libdrm ||
+-                                 die "ERROR: rkmpp requires --enable-libdrm"; }
+-                             }
+-enabled vapoursynth       && require_pkg_config vapoursynth "vapoursynth-script >= 42" VSScript.h vsscript_init
+-
+-
+-if enabled gcrypt; then
+-    GCRYPT_CONFIG="${cross_prefix}libgcrypt-config"
+-    if "${GCRYPT_CONFIG}" --version > /dev/null 2>&1; then
+-        gcrypt_cflags=$("${GCRYPT_CONFIG}" --cflags)
+-        gcrypt_extralibs=$("${GCRYPT_CONFIG}" --libs)
+-        check_func_headers gcrypt.h gcry_mpi_new $gcrypt_cflags $gcrypt_extralibs ||
+-            die "ERROR: gcrypt not found"
+-        add_cflags $gcrypt_cflags
+-    else
+-        require gcrypt gcrypt.h gcry_mpi_new -lgcrypt
+-    fi
+-fi
+-
+-if enabled sdl2; then
+-    SDL2_CONFIG="${cross_prefix}sdl2-config"
+-    test_pkg_config sdl2 "sdl2 >= 2.0.1 sdl2 < 2.1.0" SDL_events.h SDL_PollEvent
+-    if disabled sdl2 && "${SDL2_CONFIG}" --version > /dev/null 2>&1; then
+-        sdl2_cflags=$("${SDL2_CONFIG}" --cflags)
+-        sdl2_extralibs=$("${SDL2_CONFIG}" --libs)
+-        test_cpp_condition SDL.h "(SDL_MAJOR_VERSION<<16 | SDL_MINOR_VERSION<<8 | SDL_PATCHLEVEL) >= 0x020001" $sdl2_cflags &&
+-        test_cpp_condition SDL.h "(SDL_MAJOR_VERSION<<16 | SDL_MINOR_VERSION<<8 | SDL_PATCHLEVEL) < 0x020100" $sdl2_cflags &&
+-        check_func_headers SDL_events.h SDL_PollEvent $sdl2_extralibs $sdl2_cflags &&
+-            enable sdl2
+-    fi
+-    if test $target_os = "mingw32"; then
+-        sdl2_extralibs=$(filter_out '-mwindows' $sdl2_extralibs)
++                               check_lib openssl openssl/ssl.h OPENSSL_init_ssl -llibssl -llibcrypto -lws2_32 -lgdi32 -lcrypt32 ||
++9_cx ||
++            check_lib libvpx_vp9_encoder "vpx/vpx_encoder.h vpx/vp8cx.h" "vpx_codec_vp9_cx VPX_IMG_FMT_HIGHBITDEPTH" "-lvpx $libm_extralibs $pthreads_extralibs"
++    }
++    if disabled_all libvpx_vp8_decoder libvpx_vp9_decoder libvpx_vp8_encoder libvpx_vp9_encoder; then
++        die "libvpx enabled but no supported decoders found"
+     fi
+-fi
+-
+-if enabled decklink; then
+-    case $target_os in
+-        mingw32*|mingw64*|win32|win64)
+-            decklink_outdev_extralibs="$decklink_outdev_extralibs -lole32 -loleaut32"
+-            decklink_indev_extralibs="$decklink_indev_extralibs -lole32 -loleaut32"
+-            ;;
+-    esac
+-fi
+-
+-enabled securetransport &&
+-    check_func SecIdentityCreate "-Wl,-framework,CoreFoundation -Wl,-framework,Security" &&
+-    check_lib securetransport "Security/SecureTransport.h Security/Security.h" "SSLCreateContext" "-Wl,-framework,CoreFoundation -Wl,-framework,Security" ||
+-        disable securetransport
+-
+-enabled securetransport &&
+-    check_func SecItemImport "-Wl,-framework,CoreFoundation -Wl,-framework,Security"
+-
+-enabled schannel &&
+-    check_func_headers "windows.h security.h" InitializeSecurityContext -DSECURITY_WIN32 -lsecur32 &&
+-    test_cpp_condition winerror.h "defined(SEC_I_CONTEXT_EXPIRED)" &&
+-    schannel_extralibs="-lsecur32" ||
+-        disable schannel
+-
+-makeinfo --version > /dev/null 2>&1 && enable makeinfo  || disable makeinfo
+-enabled makeinfo \
+-    && [ 0$(makeinfo --version | grep "texinfo" | sed 's/.*texinfo[^0-9]*\([0-9]*\)\..*/\1/') -ge 5 ] \
+-    && enable makeinfo_html || disable makeinfo_html
+-disabled makeinfo_html && texi2html --help 2> /dev/null | grep -q 'init-file' && enable texi2html || disable texi2html
+-perl -v            > /dev/null 2>&1 && enable perl      || disable perl
+-pod2man --help     > /dev/null 2>&1 && enable pod2man   || disable pod2man
+-rsync --help 2> /dev/null | grep -q 'contimeout' && enable rsync_contimeout || disable rsync_contimeout
+-
+-# check V4L2 codecs available in the API
+-if enabled v4l2_m2m; then
+-    check_headers linux/fb.h
+-    check_headers linux/videodev2.h
+-    test_code cc linux/videodev2.h "struct v4l2_frmsizeenum vfse; vfse.discrete.width = 0;" && enable_sanitized struct_v4l2_frmivalenum_discrete
+-    check_cc v4l2_m2m linux/videodev2.h "int i = V4L2_CAP_VIDEO_M2M_MPLANE | V4L2_CAP_VIDEO_M2M | V4L2_BUF_FLAG_LAST;"
+-    check_cc vc1_v4l2_m2m linux/videodev2.h "int i = V4L2_PIX_FMT_VC1_ANNEX_G;"
+-    check_cc mpeg1_v4l2_m2m linux/videodev2.h "int i = V4L2_PIX_FMT_MPEG1;"
+-    check_cc mpeg2_v4l2_m2m linux/videodev2.h "int i = V4L2_PIX_FMT_MPEG2;"
+-    check_cc mpeg4_v4l2_m2m linux/videodev2.h "int i = V4L2_PIX_FMT_MPEG4;"
+-    check_cc hevc_v4l2_m2m linux/videodev2.h "int i = V4L2_PIX_FMT_HEVC;"
+-    check_cc h263_v4l2_m2m linux/videodev2.h "int i = V4L2_PIX_FMT_H263;"
+-    check_cc h264_v4l2_m2m linux/videodev2.h "int i = V4L2_PIX_FMT_H264;"
+-    check_cc vp8_v4l2_m2m linux/videodev2.h "int i = V4L2_PIX_FMT_VP8;"
+-    check_cc vp9_v4l2_m2m linux/videodev2.h "int i = V4L2_PIX_FMT_VP9;"
+-fi
+-
+-check_headers sys/videoio.h
+-test_code cc sys/videoio.h "struct v4l2_frmsizeenum vfse; vfse.discrete.width = 0;" && enable_sanitized struct_v4l2_frmivalenum_discrete
+-
+-check_lib user32 "windows.h winuser.h" GetShellWindow -luser32
+-check_lib vfw32 "windows.h vfw.h" capCreateCaptureWindow -lvfw32
+-# check that WM_CAP_DRIVER_CONNECT is defined to the proper value
+-# w32api 3.12 had it defined wrong
+-check_cpp_condition vfwcap_defines vfw.h "WM_CAP_DRIVER_CONNECT > WM_USER"
+-
+-check_type "dshow.h" IBaseFilter
+-
+-# check for ioctl_meteor.h, ioctl_bt848.h and alternatives
+-check_headers "dev/bktr/ioctl_meteor.h dev/bktr/ioctl_bt848.h"                   ||
+-    check_headers "machine/ioctl_meteor.h machine/ioctl_bt848.h"                 ||
+-    check_headers "dev/video/meteor/ioctl_meteor.h dev/video/bktr/ioctl_bt848.h" ||
+-    check_headers "dev/ic/bt8xx.h"
+-
+-if check_struct sys/soundcard.h audio_buf_info bytes; then
+-    enable_sanitized sys/soundcard.h
+-else
+-    test_cc -D__BSD_VISIBLE -D__XSI_VISIBLE <<EOF && add_cppflags -D__BSD_VISIBLE -D__XSI_VISIBLE && enable_sanitized sys/soundcard.h
+-    #include <sys/soundcard.h>
+-    audio_buf_info abc;
+-EOF
+-fi
+-
+-enabled alsa && { check_pkg_config alsa alsa "alsa/asoundlib.h" snd_pcm_htimestamp ||
+-                  check_lib alsa alsa/asoundlib.h snd_pcm_htimestamp -lasound; }
+-
+-enabled libjack &&
+-    require_pkg_config libjack jack jack/jack.h jack_port_get_latency_range
+-
+-enabled sndio && check_lib sndio sndio.h sio_open -lsndio
++}
+ 
+-if enabled libcdio; then
+-    check_pkg_config libcdio libcdio_paranoia "cdio/cdda.h cdio/paranoia.h" cdio_cddap_open ||
+-    check_pkg_config libcdio libcdio_paranoia "cdio/paranoia/cdda.h cdio/paranoia/paranoia.h" cdio_cddap_open ||
+-    check_lib libcdio "cdio/cdda.h cdio/paranoia.h" cdio_cddap_open -lcdio_paranoia -lcdio_cdda -lcdio ||
+-    check_lib libcdio "cdio/paranoia/cdda.h cdio/paranoia/paranoia.h" cdio_cddap_open -lcdio_paranoia -lcdio_cdda -lcdio ||
++enabled libwavpack        && require libwavpack wavpack/wavpack.h WavpackOpenFileOutput  -lwavpack
++enabled libwebp           && {
++    enabled libwebp_encoder      && require_pkg_config libwebp "libwebp >= 0.2.0" webp/encode.h WebPGetEncoderVersion
++    enabled libwebp_anim_encoder && check_pkg_config libwebp_anim_encoder "libwebpmux >= 0.4.0" webp/mux.h WebPAnimEncoderOptionsInit; }
++enabled libx264           && { check_pkg_config libx264 x264 "stdint.h x264.h" x264_encoder_encode ||
++                               { require libx264 "stdint.h x264.h" x264_encoder_encode "-lx264 $pthreads_extralibs $libm_extralibs" &&
++                                 warn "using libx264 without pkg-config"; } } &&
++                             require_cpp_condition libx264 x264.h "X264_BUILD >= 118" &&
++                             check_cpp_condition libx262 x264.h "X264_MPEG2"
++enabled libx265           && { check_pkg_config libx265 x265 "stdint.h x265.h" x265_api_get ||
++                                { require libx265 "stdint.h x265.h" x265_api_get "-llibx265 $pthreads_extralibs $libm_extralibs" &&
++                                warn "using libx265 without pkg-config"; } } &&
++                             require_cpp_condition libx265 x265.h "X265_BUILD >= 70"
++enabled libxavs           && require libxavs "stdint.h xavs.h" xavs_encoder_encode "-lxavs $pthreads_extralibs $libm_extralibs"
++enabled libxavs2          && require_pkg_config libxavs2 "xavs2 >= 1.3.0" "stdint.h xavs2.h" xavs2_api_get
++enabled libxvid           && require libxvid xvid.h xvid_global -lxvidcore
++enabled libzimg           && require_pkg_config libzimg "zimg >= 2.7.0" zimg.h zimg_get_api_version
++enabled libzmq            && require_pkg_config libzmq "libzmq >= 4.2.1" zmq.h zmq_ctx_new
++enabled libzvbi           && require_pkg_config libzvbi zvbi-0.2 libzvbi.h vbi_decoder_new &&
++                             { test_cpp_condition libzvbi.h "VBI_VERSION_MAJOR > 0 || VBI_VERSION_MINOR > 2 || VBI_VERSION_MINOR == 2 && VBI_VERSION_MICRO >= 28" ||
++                               enabled gpl || die "ERROR: libzvbi requires version 0.2.28 or --enable-gpl."; }
++enabled libxml2           && require_pkg_config libxml2 libxml-2.0 libxml2/libxml/xmlversion.h xmlCheckVersion
++enabled mbedtls           && { check_pkg_config mbedtls mbedtls mbedtls/x509_crt.h mbedtls_x509_crt_init ||
++                               check_pkg_config mbedtls mbedtls mbedtls/ssl.h mbedtls_ssl_init ||
++                               check_lib mbedtls mbedtls/ssl.h mbedtls_ssl_init -lmbedtls -lmbedx509 -lmbedcrypto ||
++                               die "ERROR: mbedTLS not found"; }
++enabled mediacodec        && { enabled jni || die "ERROR: mediacodec requires --enable-jni"; }
++enabled mmal              && { check_lib mmal interface/mmal/mmal.h mmal_port_connect -lmmal_core -lmmal_util -lmmal_vc_client -lbcm_host ||
++                               { ! enabled cross_compile &&
++                                 add_cflags -isystem/opt/vc/include/ -isystem/opt/vc/include/interface/vmcs_host/linux -isystem/opt/vc/include/interface/vcos/pthreads -fgnu89-inline &&
++                                 add_ldflags -L/opt/vc/lib/ &&
++                                 check_lib mmal interface/mmal/mmal.h mmal_port_connect -lmmal_core -lmmal_util -lmmal_vc_client -lbcm_host; } ||
++                               die "ERROR: mmal not found" &&
++                               check_func_headers interface/mmal/mmal.h "MMAL_PARAMETER_VIDEO_MAX_NUM_CALLBACKS"; }
++enabled openal            && { { for al_extralibs in "${OPENAL_LIBS}" "-lopenal" "-lOpenAL32"; do
++                               check_lib openal 'AL/al.h' alGetError "${al_extralibs}" && break; done } ||
++                               die "ERROR: openal not found"; } &&
++                             { test_cpp_condition "AL/al.h" "defined(AL_VERSION_1_1)" ||
++                               die "ERROR: openal must be installed and version must be 1.1 or compatible"; }
++enabled opencl            && { check_pkg_config opencl OpenCL CL/cl.h clEnqueueNDRangeKernel ||
++                               check_lib opencl OpenCL/cl.h clEnqueueNDRangeKernel -Wl,-framework,OpenCL ||
++                               check_lib opencl CL/cl.h clEnqueueNDRangeKernel -lOpenCL ||
++                               die "ERROR: opencl not found"; } &&
++                             { test_cpp_condition "OpenCL/cl.h" "defined(CL_VERSION_1_2)" ||
++                               test_cpp_condition "CL/cl.h" "defined(CL_VERSION_1_2)" ||
++                               die "ERROR: opencl must be installed and version must be 1.2 or compatible"; }
++enabled opengl            && { check_lib opengl GL/glx.h glXGetProcAddress "-lGL" ||
++                               check_lib opengl windows.h wglGetProcAddress "-lopengl32 -lgdi32" ||
++                               check_lib opengl OpenGL/gl3.h glGetError "-Wl,-framework,OpenGL" ||
++                               check_lib opengl ES2/gl.h glGetError "-isysroot=${sysroot} -Wl,-framework,OpenGLES" ||
++                               die "ERROR: opengl not found."
++                             }
++enabled omx_rpi           && { test_code cc OMX_Core.h OMX_IndexConfigBrcmVideoRequestIFrame ||
++                               { ! enabled cross_compile &&
++                                 add_cflags -isystem/opt/vc/include/IL &&
++                                 test_code cc OMX_Core.h OMX_IndexConfigBrcmVideoRequestIFrame; } ||
++                               die "ERROR: OpenMAX IL headers from raspberrypi/firmware not found"; } &&
++                             enable omx
++enabled omx               && require_headers OMX_Core.h
++enabled openssl           && { check_pkg_config openssl openssl openssl/ssl.h OPENSSL_init_ssl ||
++                               check_pkg_config openssl openssl openssl/ssl.h SSL_library_init ||
++                               check_lib openssl openssl/ssl.h OPENSSL_init_ssl -lssl -lcrypto ||
++                               check_lib openssl openssl/ssl.h SSL_library_init -lssl -lcrypto ||
++                               check_lib openssl openssl/ssl.h SSL_library_init -lssl32 -leay32 ||
++                               check_lib openssl openssl/ssl.h SSL_library_init -lssl -lcrypto -lws2_32 -lgdi32 ||
++dio/paranoia/paranoia.h" cdio_cddap_open -lcdio_paranoia -lcdio_cdda -lcdio ||
+     die "ERROR: No usable libcdio/cdparanoia found"
+ fi
+ 

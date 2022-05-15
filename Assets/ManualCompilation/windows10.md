@@ -25,96 +25,82 @@ Make sure to install msys2 at `C:\dev\msys64` as this is the path referred to to
 
 <br>
 
-# x264
+# (VCPKG)[https://vcpkg.io/en/index.html]
 
 <br>
 
-Open `x64 Native Tools Command Prompt for VS 2017`
-
-```sh
-cd C:\dev\msys64
-msys2_shell.cmd -mingw64 -use-full-path
-```
+Use vcpkg to install seperate libraries:
 
 <br>
 
-In `mingw64` :
+<br>
+
+Open `x64 Native Tools Command Prompt for VS 2017` (`2019` or `2022` depending on your installation, they are interchangeable):
+
+<br>
+
+Create the folder which you will be using to install FFmpeg and its dependencies:
 
 ```sh
-# make sure path includes the x64 folder of MSVC correctly :
-echo $PATH
-# look for something like this :
-/c/Program Files (x86)/Microsoft Visual Studio/2017/Community/VC/Tools/MSVC/14.16.27023/bin/HostX64/x64
 cd /
 mkdir FFmpegInstall && cd FFmpegInstall && mkdir ffmpeg_build
-git clone https://github.com/mirror/x264
-cd x264
-#configure
-./configure --prefix="/FFmpegInstall/ffmpeg_build" \
-  --enable-shared \
-  --enable-static \
-  --disable-win32thread \
-  --enable-lto \
-  --enable-debug \
-  --enable-gprof \
-  --enable-strip \
-  --enable-pic
 
-make 
-make install
+git clone https://github.com/Microsoft/vcpkg
+
+cd vcpkg
+
+bootstrap-vcpkg.bat
 
 ```
 
-<br>
-<br>
-
-
-# x265
 
 <br>
 
-Download x265 source code from [here](https://bitbucket.org/multicoreware/x265_git/downloads/?tab=tags), I've used 3.5.
+## Libraries to install with vcpkg:
 
 <br>
 
-Unzip it to `C:\dev\msys64\FFmpegInstall` .
+* [x264](https://github.com/mirror/x264)
+* [x265](https://github.com/videolan/x265)
+* [openssl](https://www.openssl.org/)
+* [fdk-aac](https://github.com/mstorsjo/fdk-aac)
+* [libvorbos](https://xiph.org/vorbis/)
 
 <br>
 
-Open `make-solutions.bat` inside `build/vc15-x86_64` and change its content to :
+To do so simply use the following command :
 
-<br>
 
 ```sh
-cmake -G "Visual Studio 16 2019" -T "v142" -A x64 -DCMAKE_SYSTEM_VERSION=10.0 "..\..\source"
+
+vcpkg --triplet=x64-windows-release install x264 --debug
+vcpkg --triplet=x64-windows-release install x265 --debug
+vcpkg --triplet=x64-windows-release install openssl --debug
+vcpkg --triplet=x64-windows-release install fdk-aac --debug
+vcpkg --triplet=x64-windows-release install libvorbis  --debug
+
 ```
 
-<br>
 
-
-Open `x64 Native Tools Command Prompt for VS 2017` :
+You will the `.dll`s files at `C:\dev\msys64\FFmpegInstall\vcpkg\installed\x64-windows-release\bin`.
 
 <br>
 
-```sh
-cd C:\dev\msys64\FFmpegInstall\x265\build\vc15-x86_64
-.\make-solution.bat
-```
+Copy the `dll`s folder into the `lib` folder of `C:\dev\msys64\FFmpegInstall\ffmpeg\ffmpeg_build\lib` .
+
+
 
 <br>
 
-Then open the `x265.sln` `Microsoft Visual studio 2019 solution` in `C:\dev\msys64\FFmpegInstall\x265\build\vc15-x86_64`
+You will the `.lib`s files at `C:\dev\msys64\FFmpegInstall\vcpkg\installed\x64-windows-release\lib`.
 
 <br>
 
-Compile it in Microsoft Visual Studio.
+You will the include folder for the libraries at `C:\dev\msys64\FFmpegInstall\vcpkg\installed\x64-windows-release\include`.
 
 <br>
 
-Copy the content of the `release` folder into the `lib` folder : 
-`C:\dev\msys64\FFmpegInstall\x265\build\vc15-x86_64\Release` to `C:\dev\msys64\FFmpegInstall\ffmpeg\ffmpeg_build\lib`
-Execept the `.exe` file `x265.exe` which goes to `C:\dev\msys64\FFmpegInstall\ffmpeg\ffmpeg_build\bin` .
-
+Copy the content of the include folder into the `include` folder of `C:\dev\msys64\FFmpegInstall\ffmpeg\ffmpeg_build\include`.
 
 <br>
 <br>
@@ -183,17 +169,24 @@ Check that the installation of cuda has been successful, and check the capabilit
 
 <br>
 
-Open the `x64 Native Tools Command Prompt for VS 2017`:
+Open the `x64 Native Tools Command Prompt for VS 2017` and go to your CUDA install replacing `v11.4` with the version of Cuda you are using:
 
 <br>
 
 ```sh
-
-C:\ProgramData\NVIDIA Corporation\CUDA Samples\v11.5\bin\win64\Release
-
+cd C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.4\extras\demo_suite>
+.\deviceQuery.exe
 ```
 
-This will give you the capabilities of the GPU code Generation (`6.0` will correspond to `compute_60` or below `compute_50` etc...).
+This will give you the capabilities of the GPU code Generation (`6.0` will correspond to `compute_60` or below `compute_50` etc...):
+
+<br>
+
+```sh
+[...]
+  CUDA Capability Major/Minor version number:    8.6
+[...]
+```
 
 <br>
 
@@ -218,6 +211,40 @@ Download `FFmpeg 4.3.3` from [here](https://github.com/FFmpeg/FFmpeg/releases/ta
 
 Unzip it into `C:\dev\msys64\FFmpegInstall` .
 
+
+## apply patches
+
+<br>
+
+Vcpkg requires a slight different configure file.
+You can clone FFmpeg and apply the patch, nut remove the folder with FFmpeg-n4.3.3 first.
+
+<br>
+
+Open the `x64 Native Tools Command Prompt for VS 2017`:
+
+<br>
+
+```sh
+git clone https://github.com/FFmpeg/FFmpeg
+git checkout a77521c
+#paste path to your ofxFFmpegRecorder/Assets/ManualCompilation/patches/x264_x255_libVorbis_fdkAac_openSSL.patch
+#for me I get :
+git apply C:\Users\pierr\Documents\DEV\OF\of_v0.11.2_vs2017_release\addons\ofxFFmpegRecorder\Assets\ManualCompilation\patches\x264_x255_libVorbis_fdkAac_openSSL.patch
+cd .. && mv FFmpeg FFmpeg-n4.3.3
+```
+<br>
+
+## Alternatively if you don't want to clone the repo:
+
+Replace the `configure` file to apply the [patch](./patches/x264_x255_libVorbis_fdkAac_openSSL.patch) to use the seperate libraries for x264, x265, Vorbis, fdk_aac, and openssl:
+
+<br>   
+
+Use this [configure](./patches/configure) file instead, and use it to replace the `configure` file inside `C:\dev\msys64\FFmpegInstall\FFmpeg-n4.3.3`.
+
+
+
 <br>
 
 Open the `x64 Native Tools Command Prompt for VS 2017`:
@@ -229,6 +256,15 @@ cd C:\dev\msys64
 msys2_shell.cmd -mingw64 -use-full-path
 ```
 
+Use `make clean` only if you have compiled FFmpeg before, to clean the install.
+
+<br>
+
+Be patient as the mingw64 shell is fraily slow, and it can take up to 1min to output anything.
+
+<br>
+
+
 In the mingw64 shell :
 
 <br>
@@ -237,7 +273,6 @@ In the mingw64 shell :
 cd /FFmpegInstall/FFmpeg-n4.3.3
 make clean
 ./configure \
---toolchain=msvc \
 --prefix="/FFmpegInstall/ffmpeg_build" \
 --target-os=win64 \
 --arch=x86_64 \
@@ -276,9 +311,7 @@ To comply with the [FFmpeg License and Legal Considerations](https://www.ffmpeg.
 
 ```sh
 cd /FFmpegInstall/FFmpeg-n4.3.3
-make clean
 ./configure \
---toolchain=msvc \
 --prefix="/FFmpegInstall/ffmpeg_build" \
 --target-os=win64 \
 --arch=x86_64 \
@@ -302,6 +335,5 @@ make clean
 --logfile=config.log
 make -j$(nproc)
 make install
-```
 
 ```
