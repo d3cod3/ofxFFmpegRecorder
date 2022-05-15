@@ -25,11 +25,11 @@ Make sure to install msys2 at `C:\dev\msys64` as this is the path referred to to
 
 <br>
 
-# (VCPKG)[https://vcpkg.io/en/index.html]
+# VCPKG
 
 <br>
 
-Use vcpkg to install seperate libraries:
+Use (vcpkg)[https://vcpkg.io/en/index.html] to install seperate libraries:
 
 <br>
 
@@ -82,25 +82,15 @@ vcpkg --triplet=x64-windows-release install libvorbis  --debug
 ```
 
 
-You will the `.dll`s files at `C:\dev\msys64\FFmpegInstall\vcpkg\installed\x64-windows-release\bin`.
+You will find the `.dll`s files at `C:\dev\msys64\FFmpegInstall\vcpkg\installed\x64-windows-release\bin`.
 
 <br>
 
-Copy the `dll`s folder into the `lib` folder of `C:\dev\msys64\FFmpegInstall\ffmpeg\ffmpeg_build\lib` .
-
-
+You will find the `.lib`s files at `C:\dev\msys64\FFmpegInstall\vcpkg\installed\x64-windows-release\lib`.
 
 <br>
 
-You will the `.lib`s files at `C:\dev\msys64\FFmpegInstall\vcpkg\installed\x64-windows-release\lib`.
-
-<br>
-
-You will the include folder for the libraries at `C:\dev\msys64\FFmpegInstall\vcpkg\installed\x64-windows-release\include`.
-
-<br>
-
-Copy the content of the include folder into the `include` folder of `C:\dev\msys64\FFmpegInstall\ffmpeg\ffmpeg_build\include`.
+You will find the include folder for the libraries at `C:\dev\msys64\FFmpegInstall\vcpkg\installed\x64-windows-release\include`.
 
 <br>
 <br>
@@ -264,6 +254,25 @@ Be patient as the mingw64 shell is fraily slow, and it can take up to 1min to ou
 
 <br>
 
+Make sure to include the correct path to the include folder for `nv_sdk` and `vcpkg` :
+
+<br>
+
+For me:
+
+```sh
+#lib folders
+nv_sdk -> "/FFmpegInstall/nv_sdk/lib"
+vcpkg -> "/FFmpegInstall/vcpkg/installed/x64-windows-release/lib"
+
+#include folders
+nv_sdk -> "/FFmpegInstall/nv_sdk/include"
+vcpkg -> "/FFmpegInstall/vcpkg/installed/x64-windows-release/include"
+
+```
+
+<br>
+
 
 In the mingw64 shell :
 
@@ -277,9 +286,9 @@ make clean
 --target-os=win64 \
 --arch=x86_64 \
 --extra-ldflags=-libpath:"/FFmpegInstall/nv_sdk/lib" \
---extra-ldflags=-libpath:"/FFmpegInstall/ffmpeg_build/lib" \
+--extra-ldflags=-libpath:"/FFmpegInstall/vcpkg/installed/x64-windows-release/lib" \
 --extra-cflags=-I"/FFmpegInstall/nv_sdk/include" \
---extra-cflags=-I"/FFmpegInstall/ffmpeg_build/include" \
+--extra-cflags=-I"/FFmpegInstall/vcpkg/installed/x64-windows-release/include" \
 --nvccflags="-gencode arch=compute_52,code=sm_52 -O2" \
 --toolchain=msvc \
 --enable-cuda-nvcc \
@@ -292,7 +301,12 @@ make clean
 --enable-d3d11va \
 --enable-nonfree \
 --enable-gpl \
+--enable-openssl \
 --enable-libx264 \
+--enable-libx265 \
+--enable-libfdk-aac \
+--enable-openssl \
+--enable-libvorbis \
 --enable-version3 \
 --disable-doc \
 --logfile=config.log
@@ -311,14 +325,15 @@ To comply with the [FFmpeg License and Legal Considerations](https://www.ffmpeg.
 
 ```sh
 cd /FFmpegInstall/FFmpeg-n4.3.3
+make clean
 ./configure \
 --prefix="/FFmpegInstall/ffmpeg_build" \
 --target-os=win64 \
 --arch=x86_64 \
 --extra-ldflags=-libpath:"/FFmpegInstall/nv_sdk/lib" \
---extra-ldflags=-libpath:"/FFmpegInstall/ffmpeg_build/lib" \
+--extra-ldflags=-libpath:"/FFmpegInstall/vcpkg/installed/x64-windows-release/lib" \
 --extra-cflags=-I"/FFmpegInstall/nv_sdk/include" \
---extra-cflags=-I"/FFmpegInstall/ffmpeg_build/include" \
+--extra-cflags=-I"/FFmpegInstall/vcpkg/installed/x64-windows-release/include" \
 --nvccflags="-gencode arch=compute_52,code=sm_52 -O2" \
 --toolchain=msvc \
 --enable-cuda-nvcc \
@@ -329,7 +344,14 @@ cd /FFmpegInstall/FFmpeg-n4.3.3
 --disable-debug \
 --enable-dxva2 \
 --enable-d3d11va \
+--enable-nonfree \
+--enable-gpl \
+--enable-openssl \
 --enable-libx264 \
+--enable-libx265 \
+--enable-libfdk-aac \
+--enable-openssl \
+--enable-libvorbis \
 --enable-version3 \
 --disable-doc \
 --logfile=config.log
