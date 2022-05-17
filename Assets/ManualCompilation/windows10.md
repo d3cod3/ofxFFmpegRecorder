@@ -35,7 +35,7 @@ Use (vcpkg)[https://vcpkg.io/en/index.html] to install seperate libraries:
 
 <br>
 
-Open `x64 Native Tools Command Prompt for VS 2017` (`2019` or `2022` depending on your installation, they are interchangeable):
+Open `x64 Native Tools Command Prompt for VS 2017` (or `2019` or `2022` depending on your installation, they are interchangeable):
 
 <br>
 
