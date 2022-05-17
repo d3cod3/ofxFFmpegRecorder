@@ -175,8 +175,7 @@ Copy the `.pc` file called `ffnvcodec.pc` from the `nv-codec-headers` folder int
 In the msys2 shell :
 
 ```sh
-/c/dev/ffmpeg/nv-codec-headers/ffnvcodec.pc /mingw64/lib/pkgconfig/
-cp /C/dev/msys64/FFmpegInstall/ffmpeg/nv-codec-headers/ffnvcodec.pc /mingw64/lib/pkgconfig/
+cp /FFmpegInstall/ffmpeg/nv-codec-headers/ffnvcodec.pc /mingw64/lib/pkgconfig/
 ```
 
 <br>
@@ -222,22 +221,14 @@ for me: I had a graphic card with `5.2` so the code is `52`; the flag becomes:
 --nvccflags="-gencode arch=compute_52,code=sm_52 -O2"
 ```
 
-
-<br>
-
-Download `FFmpeg 5.0` from [here](https://github.com/FFmpeg/FFmpeg/releases/tag/n5.0).
-
-<br>
-
-Unzip it into `C:\dev\msys64\FFmpegInstall` .
-
-
-## apply patches
+# FFmpeg 5.0
 
 <br>
 
 Vcpkg requires a slight different configure file.
 You can clone FFmpeg and apply the patch, or download FFmpeg and replace the `configure` file.
+
+## cloning and aplying the patch
 
 <br>
 
@@ -255,13 +246,20 @@ cd .. && mv FFmpeg FFmpeg-n5.0
 ```
 <br>
 
-## Alternatively if you don't want to clone the repo:
+## Download and replace the `configure` file
 
+<br>
+
+Download `FFmpeg 5.0` from [here](https://github.com/FFmpeg/FFmpeg/releases/tag/n5.0).
+
+<br>
+
+Unzip it into `/FFmpegInstall` .
 Replace the `configure` file to apply the [patch](./patches/x264_x255_libVorbis_fdkAac_openSSL.patch) to use the seperate libraries for x264, x265, Vorbis, fdk_aac, and openssl:
 
 <br>   
 
-Use this [configure](./patches/configure) file instead, and use it to replace the `configure` file inside `C:\dev\msys64\FFmpegInstall\FFmpeg-n5.0`.
+Use this [configure](./patches/configure) file to replace the `configure` file inside `/FFmpegInstall/FFmpeg-n5.0`.
 
 
 # Configure FFmpeg 
