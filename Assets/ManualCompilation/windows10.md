@@ -29,10 +29,9 @@ Make sure to install msys2 at `C:\dev\msys64` as this is the path referred to to
 
 <br>
 
-Use (vcpkg)[https://vcpkg.io/en/index.html] to install seperate libraries:
+Use [vcpkg](https://vcpkg.io/en/index.html) to install seperate libraries:
 
 <br>
-
 <br>
 
 Open `x64 Native Tools Command Prompt for VS 2017` (or `2019` or `2022` depending on your installation, they are interchangeable):
@@ -99,15 +98,15 @@ You will find the include folder for the libraries at `C:\dev\msys64\FFmpegInsta
 
 <br>
 
-Download Nvidia Cuda Toolkit from [here](https://developer.nvidia.com/cuda-downloads).
+1) Download Nvidia Cuda Toolkit from [here](https://developer.nvidia.com/cuda-downloads).
 
 <br>
 
-Download Nvidia GPU Computing Toolkit from [here](https://developer.nvidia.com/nvidia-video-codec-sdk).
+2) Download Nvidia GPU Computing Toolkit from [here](https://developer.nvidia.com/nvidia-video-codec-sdk).
 
 <br>
 
-Follow [this guide](https://docs.nvidia.com/video-technologies/video-codec-sdk/ffmpeg-with-nvidia-gpu/#compiling-for-windows) for the `nv headers` :
+3) Follow [this guide](https://docs.nvidia.com/video-technologies/video-codec-sdk/ffmpeg-with-nvidia-gpu/#compiling-for-windows) for the `nv headers` :
 
 <br>
 
@@ -142,12 +141,43 @@ which link
 
 <br>
 
-Copy content of the folders:
+4) Copy content of the folders:
 `C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.5\include` to `C:\dev\msys64\FFmpegInstall\ffmpeg\nv_sdk\include`
 and
 `C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.5\lib\x64` to `C:\dev\msys64\FFmpegInstall\ffmpeg\nv_sdk\lib`
 
 <br>
+
+5) Copy the `.pc` file into your `pkg_config_path` :
+
+<br>
+
+Check you pkg_config_path :
+Open `x64 Native Tools Command Prompt for VS 2017` (or 2019 or 2022):
+
+```sh
+cd C:\dev\msys64
+msys2_shell.cmd -mingw64 -use-full-path
+```
+
+In the msys2 shell :
+
+```sh
+echo $PKG_CONFIG_PATH
+#gives me :
+/mingw64/lib/pkgconfig:/mingw64/share/pkgconfig
+```
+
+Copy the `.pc` file called `ffnvcodec.pc` from the `nv-codec-headers` folder into one of the folder of your path:
+
+<br>
+
+In the msys2 shell :
+
+```sh
+/c/dev/ffmpeg/nv-codec-headers/ffnvcodec.pc /mingw64/lib/pkgconfig/
+cp /C/dev/msys64/FFmpegInstall/ffmpeg/nv-codec-headers/ffnvcodec.pc /mingw64/lib/pkgconfig/
+```
 
 <br>
 
@@ -359,3 +389,5 @@ make -j$(nproc)
 make install
 
 ```
+
+
