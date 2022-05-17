@@ -2,7 +2,7 @@
 
 <br>
 
-This guide is up to date with `FFmpeg` version `4.3.3` and `cuda` version `11.5`, for `Windows 10`, and writen in the winter 2021.
+This guide is up to date with `FFmpeg` version `5.0` and `cuda` version `11.5`, for `Windows 10`, and writen in the spring 2022.
 
 <br>
 
@@ -225,7 +225,7 @@ for me: I had a graphic card with `5.2` so the code is `52`; the flag becomes:
 
 <br>
 
-Download `FFmpeg 4.3.3` from [here](https://github.com/FFmpeg/FFmpeg/releases/tag/n4.3.3).
+Download `FFmpeg 5.0` from [here](https://github.com/FFmpeg/FFmpeg/releases/tag/n5.0).
 
 <br>
 
@@ -237,7 +237,7 @@ Unzip it into `C:\dev\msys64\FFmpegInstall` .
 <br>
 
 Vcpkg requires a slight different configure file.
-You can clone FFmpeg and apply the patch, nut remove the folder with FFmpeg-n4.3.3 first.
+You can clone FFmpeg and apply the patch, or download FFmpeg and replace the `configure` file.
 
 <br>
 
@@ -247,11 +247,11 @@ Open the `x64 Native Tools Command Prompt for VS 2017`:
 
 ```sh
 git clone https://github.com/FFmpeg/FFmpeg
-git checkout a77521c
+git checkout 390d685
 #paste path to your ofxFFmpegRecorder/Assets/ManualCompilation/patches/x264_x255_libVorbis_fdkAac_openSSL.patch
 #for me I get :
 git apply C:\Users\pierr\Documents\DEV\OF\of_v0.11.2_vs2017_release\addons\ofxFFmpegRecorder\Assets\ManualCompilation\patches\x264_x255_libVorbis_fdkAac_openSSL.patch
-cd .. && mv FFmpeg FFmpeg-n4.3.3
+cd .. && mv FFmpeg FFmpeg-n5.0
 ```
 <br>
 
@@ -261,20 +261,16 @@ Replace the `configure` file to apply the [patch](./patches/x264_x255_libVorbis_
 
 <br>   
 
-Use this [configure](./patches/configure) file instead, and use it to replace the `configure` file inside `C:\dev\msys64\FFmpegInstall\FFmpeg-n4.3.3`.
+Use this [configure](./patches/configure) file instead, and use it to replace the `configure` file inside `C:\dev\msys64\FFmpegInstall\FFmpeg-n5.0`.
 
 
+# Configure FFmpeg 
+
+## Flags
 
 <br>
-
-Open the `x64 Native Tools Command Prompt for VS 2017`:
-
 <br>
 
-```sh
-cd C:\dev\msys64
-msys2_shell.cmd -mingw64 -use-full-path
-```
 
 Use `make clean` only if you have compiled FFmpeg before, to clean the install.
 
@@ -303,13 +299,22 @@ vcpkg -> "/FFmpegInstall/vcpkg/installed/x64-windows-release/include"
 
 <br>
 
+## Compilation
+
+
+Open the `x64 Native Tools Command Prompt for VS 2017`:
+
+```sh
+cd C:\dev\msys64
+msys2_shell.cmd -mingw64 -use-full-path
+```
 
 In the mingw64 shell :
 
 <br>
 
 ```sh
-cd /FFmpegInstall/FFmpeg-n4.3.3
+cd /FFmpegInstall/FFmpeg-n5.0
 make clean
 ./configure \
 --prefix="/FFmpegInstall/ffmpeg_build" \
@@ -324,7 +329,6 @@ make clean
 --enable-cuda-nvcc \
 --enable-libnpp \
 --enable-shared \
---enable-avresample \
 --pkg-config=pkg-config \
 --disable-debug \
 --enable-dxva2 \
@@ -345,6 +349,37 @@ make install
 ```
 
 <br>
+
+## Copying the extra `.dll` files
+
+Make sure to copy the `.dll` created by vcpkg:
+
+<br>
+
+Open the `x64 Native Tools Command Prompt for VS 2017`:
+
+<br>
+
+```sh
+cd C:\dev\msys64
+msys2_shell.cmd -mingw64 -use-full-path
+```
+
+In the mingw64 shell :
+
+<br>
+
+```sh
+cp /FFmpegInstall/vcpkg/installed/x64-windows-release/bin/*.dll /FFmpegInstall/ffmpeg_build/bin/
+```
+
+## Copy it all into Openframeworks
+
+Copy the content of `/FFmpegInstall/ffmpeg_build/bin/` into your `/data/ffmpeg/window` application folder:
+
+![.](../imgs/windowFolder.PNG)
+
+
 
 
 # Distribution of FFmpeg 
@@ -354,7 +389,7 @@ make install
 To comply with the [FFmpeg License and Legal Considerations](https://www.ffmpeg.org/legal.html), the version of FFmpeg distributed with this repo is using the following configuration:
 
 ```sh
-cd /FFmpegInstall/FFmpeg-n4.3.3
+cd /FFmpegInstall/FFmpeg-n5.0
 make clean
 ./configure \
 --prefix="/FFmpegInstall/ffmpeg_build" \
@@ -369,7 +404,6 @@ make clean
 --enable-cuda-nvcc \
 --enable-libnpp \
 --enable-shared \
---enable-avresample \
 --pkg-config=pkg-config \
 --disable-debug \
 --enable-dxva2 \
@@ -389,5 +423,3 @@ make -j$(nproc)
 make install
 
 ```
-
-
