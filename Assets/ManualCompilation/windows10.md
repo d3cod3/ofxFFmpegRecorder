@@ -64,6 +64,7 @@ bootstrap-vcpkg.bat
 * [openssl](https://www.openssl.org/)
 * [fdk-aac](https://github.com/mstorsjo/fdk-aac)
 * [libvorbos](https://xiph.org/vorbis/)
+* [libmp3lame](https://lame.sourceforge.io/)
 
 <br>
 
@@ -77,6 +78,7 @@ vcpkg --triplet=x64-windows-release install x265 --debug
 vcpkg --triplet=x64-windows-release install openssl --debug
 vcpkg --triplet=x64-windows-release install fdk-aac --debug
 vcpkg --triplet=x64-windows-release install libvorbis  --debug
+vcpkg --triplet=x64-windows-release install mp3lame  --debug
 
 ```
 
@@ -340,6 +342,7 @@ make clean
 --enable-openssl \
 --enable-libvorbis \
 --enable-version3 \
+--enable-libmp3lame \
 --disable-doc \
 --logfile=config.log
 make -j$(nproc)
@@ -415,6 +418,7 @@ make clean
 --enable-openssl \
 --enable-libvorbis \
 --enable-version3 \
+--enable-libmp3lame \
 --disable-doc \
 --logfile=config.log
 make -j$(nproc)

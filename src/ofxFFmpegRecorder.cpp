@@ -43,7 +43,7 @@ ofxFFmpegRecorder::ofxFFmpegRecorder()
     , m_DefaultVideoDevice()
     , m_DefaultAudioDevice()
     , m_VideCodec("mpeg4")
-    , m_AudioCodec("libmp3lame")
+    , m_AudioCodec("libfdk_aac")
     , m_CustomRecordingFile(nullptr)
     , m_DefaultRecordingFile(nullptr)
 {
@@ -452,9 +452,9 @@ bool ofxFFmpegRecorder::startCustomAudioRecord()
 
     // audio export file config
     args.push_back("-acodec " + m_AudioCodec);
-    args.push_back("-f mp3");
+   /* args.push_back("-f mp3");
     args.push_back("-ar " + std::to_string(m_sampleRate));
-    args.push_back("-ac 1");
+    args.push_back("-ac 1");*/
     args.push_back("-b:a 320k");
     std::copy(m_AdditionalOutputArguments.begin(), m_AdditionalOutputArguments.end(), std::back_inserter(args));
 
@@ -543,11 +543,11 @@ size_t ofxFFmpegRecorder::addFrame(const ofPixels &pixels)
     float delta = std::chrono::duration<float>(now - m_RecordStartTime).count() - recordedDuration - m_TotalPauseDuration;
     const float framerate = 1.f / m_Fps;
 
-    while (m_AddedVideoFrames == 0 || delta >= framerate) {
-        delta -= framerate;
+    //while (m_AddedVideoFrames == 0 || delta >= framerate) {
+        //delta -= framerate;
         m_Frames.produce(new ofPixels(pixels));
         m_AddedVideoFrames++;
-    }
+    //}
 
     return written;
 }
