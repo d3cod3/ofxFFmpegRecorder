@@ -10,6 +10,9 @@
 
 #include <thread>
 
+// uncomment if using ffmpeg compiled with CUDA capabilities and non-free codecs [https://github.com/d3cod3/ofxFFmpegRecorder/blob/master/Assets/ManualCompilation/compileFFmpeg.md]
+//#define FFMPEG_NONFREECODECS_CUDA_COMPILATION
+
 
 using HighResClock = std::chrono::time_point<std::chrono::high_resolution_clock>;
 
