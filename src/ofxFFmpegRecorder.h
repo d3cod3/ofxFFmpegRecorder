@@ -8,7 +8,10 @@
 #include "ofRectangle.h"
 #include "ofPixels.h"
 
+#if defined(TARGET_OSX) || defined(TARGET_LINUX)
 #include <thread>
+#endif
+
 
 // uncomment if using ffmpeg compiled with CUDA capabilities and non-free codecs [https://github.com/d3cod3/ofxFFmpegRecorder/blob/master/Assets/ManualCompilation/compileFFmpeg.md]
 //#define FFMPEG_NONFREECODECS_CUDA_COMPILATION
@@ -129,7 +132,8 @@ public:
     bool isPaused() const;
     void setPaused(bool paused);
 
-	void setPixelFormat(ofImageType aType);
+    void setInputPixelFormat(ofImageType aType);
+    void setOutputPixelFormat(ofImageType aType);
 
     /**
      * @brief Returns the record duration for the custom recording. This will return 0 for the webcam recording.
@@ -319,7 +323,10 @@ private:
     LockFreeQueue<ofPixels *> m_Frames;
     LockFreeQueue<ofSoundBuffer *> m_Buffers;
 
-    std::string mPixFmt = "rgb24";
+    std::string mInputPixFmt = "rgb24";
+    std::string mOutputPixFmt = "rgb24";
+
+    bool mBStopRequested = false;
 
 private:
     /**

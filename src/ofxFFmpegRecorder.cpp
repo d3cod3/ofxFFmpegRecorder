@@ -266,18 +266,32 @@ void ofxFFmpegRecorder::setPaused(bool paused)
     }
 }
 
-void ofxFFmpegRecorder::setPixelFormat(ofImageType aType)
+void ofxFFmpegRecorder::setInputPixelFormat(ofImageType aType)
 {
-	mPixFmt = "rgb24";
+    mInputPixFmt = "rgb24";
 	if (aType == OF_IMAGE_COLOR) {
-		mPixFmt = "rgb24";
-	}
-	else if (aType == OF_IMAGE_GRAYSCALE) {
-		mPixFmt = "gray";
-	}
-	else {
+        mInputPixFmt = "rgb24";
+	}else if (aType == OF_IMAGE_GRAYSCALE) {
+        mInputPixFmt = "gray";
+    }else if( aType == OF_IMAGE_COLOR_ALPHA ) {
+        mInputPixFmt = "rgba";
+    }else {
 		ofLogError() << "unsupported format, setting to OF_IMAGE_COLOR";
 	}
+}
+
+void ofxFFmpegRecorder::setOutputPixelFormat(ofImageType aType)
+{
+    mOutputPixFmt = "rgb24";
+    if (aType == OF_IMAGE_COLOR) {
+        mOutputPixFmt = "rgb24";
+    }else if (aType == OF_IMAGE_GRAYSCALE) {
+        mOutputPixFmt = "gray";
+    }else if( aType == OF_IMAGE_COLOR_ALPHA ) {
+        mInputPixFmt = "rgba";
+    }else {
+        ofLogError() << "unsupported format, setting to OF_IMAGE_COLOR";
+    }
 }
 
 float ofxFFmpegRecorder::getRecordedDuration() const
@@ -390,7 +404,7 @@ bool ofxFFmpegRecorder::startCustomRecord()
     args.push_back("-s " + std::to_string(static_cast<unsigned int>(m_VideoSize.x)) + "x" + std::to_string(static_cast<unsigned int>(m_VideoSize.y)));
     args.push_back("-f rawvideo");
     //args.push_back("-pix_fmt rgb24");
-	args.push_back("-pix_fmt " + mPixFmt);
+    args.push_back("-pix_fmt " + mInputPixFmt);
     args.push_back("-vcodec rawvideo");
     args.push_back("-i -");
     
@@ -399,6 +413,7 @@ bool ofxFFmpegRecorder::startCustomRecord()
     args.push_back("-b:v " + std::to_string(m_BitRate) + "k");
     args.push_back("-r " + std::to_string(m_Fps));
     args.push_back("-framerate " + std::to_string(m_Fps));
+    args.push_back("-pix_fmt " + mOutputPixFmt );
     std::copy(m_AdditionalOutputArguments.begin(), m_AdditionalOutputArguments.end(), std::back_inserter(args));
     
     args.push_back(m_OutputPath);
@@ -494,7 +509,7 @@ bool ofxFFmpegRecorder::startCustomStreaming()
     args.push_back("-framerate " + std::to_string(m_Fps));
     args.push_back("-s " + std::to_string(static_cast<unsigned int>(m_VideoSize.x)) + "x" + std::to_string(static_cast<unsigned int>(m_VideoSize.y)));
     args.push_back("-f rawvideo");
-    args.push_back("-pix_fmt " + mPixFmt);
+    args.push_back("-pix_fmt " + mInputPixFmt);
     args.push_back("-vcodec rawvideo");
     args.push_back("-i -");
 
@@ -595,7 +610,9 @@ size_t ofxFFmpegRecorder::addBuffer(const ofSoundBuffer &buffer, float afps){
 
 void ofxFFmpegRecorder::stop()
 {
+    mBStopRequested=false;
     if (m_CustomRecordingFile) {
+        mBStopRequested = true;
         #if defined(_WIN32)
         _pclose(m_CustomRecordingFile);
         #else
@@ -604,7 +621,9 @@ void ofxFFmpegRecorder::stop()
         m_CustomRecordingFile = nullptr;
         m_AddedVideoFrames = 0;
         m_AddedAudioFrames = 0;
+        ofLogNotice("ofxFFmpegRecorder::stop : trying to join thread joinable: ") << m_Thread.joinable();
         joinThread();
+        mBStopRequested=false;
     }
     else if (m_DefaultRecordingFile) {
         fwrite("q", sizeof(char), 1, m_DefaultRecordingFile);
@@ -824,11 +843,11 @@ void ofxFFmpegRecorder::determineDefaultDevices()
 
 void ofxFFmpegRecorder::processFrame()
 {
-    while (isRecording()) {
+    while (isRecording() && !mBStopRequested) {
         ofPixels *pixels = nullptr;
         if (m_Frames.consume(pixels) && pixels) {
             const unsigned char *data = pixels->getData();
-            const size_t dataLength = m_VideoSize.x * m_VideoSize.y * 3;
+            const size_t dataLength = m_VideoSize.x * m_VideoSize.y * pixels->getNumChannels();
             const size_t written = fwrite(data, sizeof(char), dataLength, m_CustomRecordingFile);
             if (written <= 0) {
                 LOG_WARNING("Cannot write the frame.");
@@ -861,5 +880,7 @@ void ofxFFmpegRecorder::joinThread()
 {
     if (m_Thread.joinable()) {
         m_Thread.join();
+    }else {
+        ofLogWarning("ofxFFmpegRecorder::joinThread() : not joinable!");
     }
 }
