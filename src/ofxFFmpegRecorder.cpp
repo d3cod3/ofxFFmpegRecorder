@@ -5,9 +5,24 @@
 #include "ofSoundStream.h"
 
 // Logging macros
+#if defined(_DEBUG)
+
 #define LOG_ERROR(message) ofLogError("") << __FUNCTION__ << ":" << __LINE__ << ": " << message
 #define LOG_WARNING(message) ofLogWarning("") << __FUNCTION__ << ":" << __LINE__ << ": " << message
 #define LOG_NOTICE(message) ofLogNotice("") << __FUNCTION__ << ":" << __LINE__ << ": " << message
+#define LOG(message)								\
+do {															\
+  std::cout << message << std::endl;						\
+} while (0)
+
+#else
+
+#define LOG_ERROR(message) 
+#define LOG_WARNING(message)
+#define LOG_NOTICE(message)
+#define LOG(X)     
+
+#endif
 
 ofxFFmpegRecorder::ofxFFmpegRecorder()
     : m_FFmpegPath("ffmpeg")
@@ -28,7 +43,7 @@ ofxFFmpegRecorder::ofxFFmpegRecorder()
     , m_DefaultVideoDevice()
     , m_DefaultAudioDevice()
     , m_VideCodec("mpeg4")
-    , m_AudioCodec("libmp3lame")
+    , m_AudioCodec("libfdk_aac")
     , m_CustomRecordingFile(nullptr)
     , m_DefaultRecordingFile(nullptr)
 {
@@ -193,7 +208,7 @@ void ofxFFmpegRecorder::setBitRate(unsigned int rate)
         LOG_NOTICE("A recording is in proggress. The change will take effect for the next recording session.");
     }
 
-    m_BitRate = rate;
+	m_BitRate = rate;
 }
 
 std::string ofxFFmpegRecorder::getVideoCodec() const
@@ -207,7 +222,7 @@ void ofxFFmpegRecorder::setVideoCodec(const std::string &codec)
         LOG_NOTICE("A recording is in proggress. The change will take effect for the next recording session.");
     }
 
-    m_VideCodec = codec;
+	m_VideCodec = codec;
 }
 
 float ofxFFmpegRecorder::getWidth() {
@@ -397,6 +412,9 @@ bool ofxFFmpegRecorder::startCustomRecord()
     m_CustomRecordingFile = popen( cmd.c_str(), "w" );
 #endif // _WIN32
 
+
+	LOG(cmd);
+
     return true;
 }
 
@@ -434,9 +452,9 @@ bool ofxFFmpegRecorder::startCustomAudioRecord()
 
     // audio export file config
     args.push_back("-acodec " + m_AudioCodec);
-    args.push_back("-f mp3");
+   /* args.push_back("-f mp3");
     args.push_back("-ar " + std::to_string(m_sampleRate));
-    args.push_back("-ac 1");
+    args.push_back("-ac 1");*/
     args.push_back("-b:a 320k");
     std::copy(m_AdditionalOutputArguments.begin(), m_AdditionalOutputArguments.end(), std::back_inserter(args));
 
@@ -525,11 +543,11 @@ size_t ofxFFmpegRecorder::addFrame(const ofPixels &pixels)
     float delta = std::chrono::duration<float>(now - m_RecordStartTime).count() - recordedDuration - m_TotalPauseDuration;
     const float framerate = 1.f / m_Fps;
 
-    while (m_AddedVideoFrames == 0 || delta >= framerate) {
-        delta -= framerate;
+    //while (m_AddedVideoFrames == 0 || delta >= framerate) {
+        //delta -= framerate;
         m_Frames.produce(new ofPixels(pixels));
         m_AddedVideoFrames++;
-    }
+    //}
 
     return written;
 }
