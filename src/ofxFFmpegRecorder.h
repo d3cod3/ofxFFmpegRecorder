@@ -8,9 +8,7 @@
 #include "ofRectangle.h"
 #include "ofPixels.h"
 
-#if defined(TARGET_OSX) || defined(TARGET_LINUX)
 #include <thread>
-#endif
 
 
 // uncomment if using ffmpeg compiled with CUDA capabilities and non-free codecs [https://github.com/d3cod3/ofxFFmpegRecorder/blob/master/Assets/ManualCompilation/compileFFmpeg.md]
