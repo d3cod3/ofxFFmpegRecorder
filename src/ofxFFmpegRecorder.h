@@ -130,8 +130,8 @@ public:
     bool isPaused() const;
     void setPaused(bool paused);
 
-    void setInputPixelFormat(ofImageType aType);
-    void setOutputPixelFormat(ofImageType aType);
+    void setInputPixelFormat(const std::string &format);
+    void setOutputPixelFormat(const std::string &format);
 
     /**
      * @brief Returns the record duration for the custom recording. This will return 0 for the webcam recording.
@@ -321,8 +321,8 @@ private:
     LockFreeQueue<ofPixels *> m_Frames;
     LockFreeQueue<ofSoundBuffer *> m_Buffers;
 
-    std::string mInputPixFmt = "rgb24";
-    std::string mOutputPixFmt = "rgb24";
+    std::string mInputPixFmt;
+    std::string mOutputPixFmt;
 
     bool mBStopRequested = false;
 
