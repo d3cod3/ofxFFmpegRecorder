@@ -523,7 +523,7 @@ bool ofxFFmpegRecorder::startCustomStreaming()
 
 }
 
-size_t ofxFFmpegRecorder::addFrame(const ofPixels &pixels)
+size_t ofxFFmpegRecorder::addFrame(const ofPixels &pixels, bool realTime)
 {
     if (m_IsPaused) {
         LOG_NOTICE("Recording is paused.");
@@ -549,8 +549,8 @@ size_t ofxFFmpegRecorder::addFrame(const ofPixels &pixels)
 
     HighResClock now = std::chrono::high_resolution_clock::now();
     const float recordedDuration = getRecordedDuration();
-    float delta = std::chrono::duration<float>(now - m_RecordStartTime).count() - recordedDuration - m_TotalPauseDuration;
     const float framerate = 1.f / m_Fps;
+    float delta = realTime ? std::chrono::duration<float>(now - m_RecordStartTime).count() - recordedDuration - m_TotalPauseDuration : framerate;
 
     while (m_AddedVideoFrames == 0 || delta >= framerate) {
         delta -= framerate;
@@ -561,7 +561,7 @@ size_t ofxFFmpegRecorder::addFrame(const ofPixels &pixels)
     return written;
 }
 
-size_t ofxFFmpegRecorder::addBuffer(const ofSoundBuffer &buffer, float afps){
+size_t ofxFFmpegRecorder::addBuffer(const ofSoundBuffer &buffer, float afps, bool realTime){
     if (m_IsPaused) {
         LOG_NOTICE("Recording is paused.");
         return 0;
@@ -586,8 +586,8 @@ size_t ofxFFmpegRecorder::addBuffer(const ofSoundBuffer &buffer, float afps){
 
     HighResClock now = std::chrono::high_resolution_clock::now();
     const float recordedDuration = getRecordedAudioDuration(afps);
-    float delta = std::chrono::duration<float>(now - m_RecordStartTime).count() - recordedDuration - m_TotalPauseDuration;
     const float framerate = 1.f / m_Fps;
+    float delta = realTime ? std::chrono::duration<float>(now - m_RecordStartTime).count() - recordedDuration - m_TotalPauseDuration : framerate;
 
     while (m_AddedAudioFrames == 0 || delta >= framerate) {
         delta -= framerate;
