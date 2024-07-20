@@ -33,6 +33,7 @@ ofxFFmpegRecorder::ofxFFmpegRecorder()
     , m_IsPaused(false)
     , m_VideoSize(0, 0)
     , m_BitRate(2000)
+    , m_BitRateAudio(320)
     , m_AddedVideoFrames(0)
     , m_AddedAudioFrames(0)
     , m_Fps(30.f)
@@ -215,6 +216,20 @@ void ofxFFmpegRecorder::setBitRate(unsigned int rate)
     }
 
 	m_BitRate = rate;
+}
+
+unsigned int ofxFFmpegRecorder::getBitRateAudio() const
+{
+	return m_BitRateAudio;
+}
+
+void ofxFFmpegRecorder::setBitRateAudio(unsigned int rate)
+{
+    if (isRecording()) {
+        LOG_NOTICE("A recording is in progress. The change will take effect for the next recording session.");
+    }
+
+    m_BitRateAudio = rate;
 }
 
 std::string ofxFFmpegRecorder::getVideoCodec() const
@@ -464,7 +479,7 @@ bool ofxFFmpegRecorder::startCustomAudioRecord()
     args.push_back("-f mp3");
     args.push_back("-ar " + std::to_string(m_sampleRate));
     args.push_back("-ac 1");
-    args.push_back("-b:a 320k");
+    args.push_back("-b:a " + std::to_string(m_BitRateAudio)+"k");
     std::copy(m_AdditionalOutputArguments.begin(), m_AdditionalOutputArguments.end(), std::back_inserter(args));
 
     args.push_back(m_OutputPath);

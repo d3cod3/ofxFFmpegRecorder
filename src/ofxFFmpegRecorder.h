@@ -117,6 +117,9 @@ public:
     unsigned int getBitRate() const;
     void setBitRate(unsigned int rate);
 
+    unsigned int getBitRateAudio() const;
+    void setBitRateAudio(unsigned int rate);
+
     std::string getVideoCodec() const;
     void setVideoCodec(const std::string &codec);
 
@@ -284,7 +287,7 @@ private:
     bool m_IsPaused;
 
     glm::vec2 m_VideoSize;
-    unsigned int m_BitRate, m_AddedVideoFrames, m_AddedAudioFrames;
+    unsigned int m_BitRate, m_BitRateAudio, m_AddedVideoFrames, m_AddedAudioFrames;
 
     float m_Fps,
           m_CaptureDuration,
