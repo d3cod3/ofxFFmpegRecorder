@@ -9,6 +9,7 @@
 #include "ofPixels.h"
 
 #include <thread>
+#include <list>
 
 
 // uncomment if using ffmpeg compiled with CUDA capabilities and non-free codecs [https://github.com/d3cod3/ofxFFmpegRecorder/blob/master/Assets/ManualCompilation/compileFFmpeg.md]
