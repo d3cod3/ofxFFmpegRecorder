@@ -118,6 +118,9 @@ public:
     unsigned int getBitRate() const;
     void setBitRate(unsigned int rate);
 
+    unsigned int getBitRateAudio() const;
+    void setBitRateAudio(unsigned int rate);
+
     std::string getVideoCodec() const;
     void setVideoCodec(const std::string &codec);
 
@@ -175,18 +178,21 @@ public:
     bool startCustomStreaming();
 
     /**
-     * @brief Add a frame to the stream. This can onle be used If you started recording a custom video. Make sure that the frames are added continuously.
+     * @brief Add a frame to the stream. This can only be used If you started recording a custom video. Make sure that the frames are added continuously.
      * @param pixels
+     * @param realTime : Set to false for offline rendering. In this mode, only 1 frame is added and there is no "skipped frames compensation" as in the realTime mode.
      * @return
      */
-    size_t addFrame(const ofPixels &pixels);
+    size_t addFrame(const ofPixels &pixels, bool realTime=true);
 
     /**
      * @brief Add a sound buffer to the stream. This can onle be used If you started recording a custom audio. Make sure that the buffers are added continuously inside the audioIn thread.
      * @param pixels
+     * @param afps
+     * @param realTime : Set to false for offline rendering. In this mode, only 1 frame is added and there is no "skipped frames compensation" as in the realTime mode.
      * @return
      */
-    size_t addBuffer(const ofSoundBuffer &buffer, float afps);
+    size_t addBuffer(const ofSoundBuffer &buffer, float afps, bool realTime=true);
 
     void stop();
 
@@ -282,7 +288,7 @@ private:
     bool m_IsPaused;
 
     glm::vec2 m_VideoSize;
-    unsigned int m_BitRate, m_AddedVideoFrames, m_AddedAudioFrames;
+    unsigned int m_BitRate, m_BitRateAudio, m_AddedVideoFrames, m_AddedAudioFrames;
 
     float m_Fps,
           m_CaptureDuration,
